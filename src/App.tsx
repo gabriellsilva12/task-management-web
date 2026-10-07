@@ -1,12 +1,18 @@
-import "./styles/App.css"
-import AuthForm from './components/auth/AuthForm'
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import "./styles/App.css";
+import { Navigate, Route, Routes } from "react-router-dom";
 
 function App() {
   return (
-    <div className="bg-black w-full h-screen flex items-center justify-center px-8">
-      <AuthForm mode="login"/>
-    </div>
-  )
+    <Routes>
+      <Route path="/login" element={<Login />} />
+
+      <Route path="/register" element={<Register />} />
+
+      <Route path="*" element={<Navigate to={"/login"} />} />
+    </Routes>
+  );
 }
 
-export default App
+export default App;

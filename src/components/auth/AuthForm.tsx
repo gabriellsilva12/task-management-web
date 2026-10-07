@@ -2,48 +2,50 @@ import { Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
 import type { FormEvent } from "react";
 import FormField from "../ui/FormField";
+import { useNavigate } from "react-router-dom";
 
 type AuthFormProps = {
   mode: "login" | "register";
 };
 
 function AuthForm({ mode }: AuthFormProps) {
-  const [authMode, setAuthMode] = useState(mode);
-  
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
+  const navigate = useNavigate();
+
   function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const payload =
-      authMode === "login" ? { email, password } : { name, email, password };
-    console.log(authMode === "login" ? "Logging in:" : "Registering:", payload);
+      mode === "login" ? { email, password } : { name, email, password };
+      console.log(mode === "login" ? "Logging in:" : "Registering:", payload);
   }
 
-  function toggleAuthMode() {
-    setAuthMode((m) => (m === "register" ? "login" : "register"));
-    setName("");
-    setEmail("");
-    setPassword("");
+  function togglemode() {
+    if (mode !== "login") {
+      navigate("/login");
+    } else {
+      navigate("/register");
+    }
   }
 
   return (
     <div className="w-full max-w-sm">
       <div className="mb-8 text-center">
-        <h1 className="text-2xl font-semibold tracking-tight text-neutral-900">
-          {authMode === "register" ? "Create your account" : "Welcome back"}
+        <h1 className="text-2xl font-semibold tracking-tight text-neutral-200">
+          {mode === "register" ? "Create your account" : "Welcome back"}
         </h1>
         <p className="mt-1.5 text-sm text-neutral-300">
-          {authMode === "register"
+          {mode === "register"
             ? "Start your journey in seconds"
             : "Sign in to continue"}
         </p>
       </div>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        {authMode === "register" && (
+        {mode === "register" && (
           <FormField
             label="Name"
             type="text"
@@ -66,10 +68,10 @@ function AuthForm({ mode }: AuthFormProps) {
             <label className="text-sm font-medium text-neutral-300">
               Password
             </label>
-            {authMode === "login" && (
+            {mode === "login" && (
               <button
                 type="button"
-                className="text-xs text-neutral-500 transition-colors hover:text-neutral-100"
+                className="text-xs text-neutral-300 transition-colors hover:text-neutral-100"
               >
                 Forgot?
               </button>
@@ -103,12 +105,11 @@ function AuthForm({ mode }: AuthFormProps) {
                 hover:bg-neutral-100 hover:text-neutral-700
               "
             >
-              {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              {showPassword ? <EyeOff size={22} /> : <Eye size={22} />}
             </button>
           </div>
         </div>
 
-        {/* Submit */}
         <button
           type="submit"
           className="
@@ -122,21 +123,21 @@ function AuthForm({ mode }: AuthFormProps) {
             disabled:cursor-not-allowed disabled:opacity-50
           "
         >
-          {authMode === "register" ? "Create account" : "Sign in"}
+          {mode === "register" ? "Create account" : "Sign in"}
         </button>
       </form>
 
       {/* Toggle */}
       <p className="mt-6 text-center text-sm text-neutral-400">
-        {authMode === "register"
+        {mode === "register"
           ? "Already have an account?"
           : "Don't have an account?"}{" "}
         <button
           type="button"
-          onClick={toggleAuthMode}
+          onClick={togglemode}
           className="font-medium text-blue-200 underline-offset-4 transition-colors hover:underline cursor-pointer"
         >
-          {authMode === "register" ? "Sign in" : "Sign up"}
+          {mode === "register" ? "Sign in" : "Sign up"}
         </button>
       </p>
     </div>

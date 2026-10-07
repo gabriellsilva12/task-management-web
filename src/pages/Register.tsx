@@ -1,0 +1,9 @@
+import AuthForm from "../components/auth/AuthForm";
+
+export default function Register() {
+  return (
+    <div className="bg-black w-full h-screen flex items-center justify-center px-8">
+      <AuthForm mode="register" />
+    </div>
+  );
+}
