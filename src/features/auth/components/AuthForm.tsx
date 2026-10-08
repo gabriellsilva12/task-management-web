@@ -1,7 +1,7 @@
 import { Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
 import type { FormEvent } from "react";
-import FormField from "../ui/FormField";
+import FormField from "../../../components/ui/FormField.js";
 import { useNavigate } from "react-router-dom";
 
 type AuthFormProps = {
