@@ -1,0 +1,283 @@
+
+@import "tailwindcss";
+
+
+/* =========================
+   Animated dark background
+========================= */
+
+.background-gradient-radial {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  min-height: 100vh;
+
+  background:
+    radial-gradient(
+      ellipse at 50% 45%,
+      #242824 0%,
+      #111311 42%,
+      #000000 80%
+    );
+}
+
+/* Soft green and yellow ambient light */
+
+.background-gradient-radial::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: -15%;
+  pointer-events: none;
+
+  background:
+    radial-gradient(
+      circle at 12% 12%,
+      rgb(210 248 152 / 20%) 0%,
+      transparent 23%
+    ),
+    radial-gradient(
+      ellipse at 88% 78%,
+      rgb(210 248 152 / 14%) 0%,
+      transparent 27%
+    ),
+    radial-gradient(
+      circle at 82% 15%,
+      rgb(246 249 48 / 10%) 0%,
+      transparent 17%
+    );
+
+  filter: blur(38px);
+  animation: ambient-glow 12s ease-in-out infinite alternate;
+}
+
+@keyframes ambient-glow {
+  from {
+    transform: translate3d(-1%, -1%, 0) scale(1);
+  }
+
+  to {
+    transform: translate3d(2%, 1%, 0) scale(1.06);
+  }
+}
+
+/* Abstract decorative rings */
+
+.background-gradient-radial::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  pointer-events: none;
+
+  background:
+    radial-gradient(
+      circle at 100% 0%,
+      transparent 0%,
+      transparent 55%,
+      rgb(210 248 152 / 12%) 55.2%,
+      transparent 55.5%
+    ),
+    radial-gradient(
+      circle at 0% 100%,
+      transparent 0%,
+      transparent 58%,
+      rgb(246 249 48 / 8%) 58.2%,
+      transparent 58.5%
+    );
+}
+
+/* =========================
+   Authentication card
+   The card itself does not animate
+========================= */
+
+.auth-card {
+  position: relative;
+  z-index: 1;
+
+  border: 1px solid rgb(210 248 152 / 20%);
+
+  background: linear-gradient(
+    135deg,
+    rgb(38 42 36 / 82%),
+    rgb(17 19 17 / 76%)
+  );
+
+  box-shadow:
+    0 0 45px rgb(210 248 152 / 5%),
+    0 25px 80px rgb(0 0 0 / 55%),
+    inset 0 1px 0 rgb(252 252 252 / 10%);
+
+  backdrop-filter: blur(24px) saturate(125%);
+  -webkit-backdrop-filter: blur(24px) saturate(125%);
+
+  transition:
+    border-color 250ms ease,
+    box-shadow 250ms ease;
+}
+
+.auth-card:hover {
+  border-color: rgb(210 248 152 / 32%);
+
+  box-shadow:
+    0 0 55px rgb(210 248 152 / 8%),
+    0 30px 85px rgb(0 0 0 / 60%),
+    inset 0 1px 0 rgb(252 252 252 / 12%);
+}
+
+/* =========================
+   Form content animation
+   Only the content moves
+========================= */
+
+.auth-form-content {
+  width: 100%;
+  min-width: 0;
+}
+
+.auth-form-content--login {
+  animation: form-slide-from-left 500ms ease both;
+}
+
+.auth-form-content--register {
+  animation: form-slide-from-right 500ms ease both;
+}
+
+@keyframes form-slide-from-left {
+  from {
+    opacity: 0;
+    transform: translate3d(-45px, 0, 0);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes form-slide-from-right {
+  from {
+    opacity: 0;
+    transform: translate3d(45px, 0, 0);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+/* =========================
+   Form inputs
+========================= */
+
+.auth-input {
+  width: 100%;
+  min-width: 0;
+
+  border: 1px solid rgb(252 252 252 / 14%);
+  border-radius: 12px;
+
+  background: rgb(0 0 0 / 28%);
+  padding: 12px 14px;
+
+  color: var(--color-white);
+  outline: none;
+
+  transition:
+    border-color 200ms ease,
+    box-shadow 200ms ease,
+    background-color 200ms ease;
+}
+
+.auth-input::placeholder {
+  color: rgb(252 252 252 / 42%);
+}
+
+.auth-input:focus {
+  border-color: var(--color-lime-cream);
+  background: rgb(0 0 0 / 45%);
+
+  box-shadow:
+    0 0 0 3px rgb(210 248 152 / 10%),
+    0 0 20px rgb(210 248 152 / 5%);
+}
+
+/* =========================
+   Primary action button
+========================= */
+
+.auth-submit {
+  background: var(--color-lime-cream);
+  color: var(--color-black);
+
+  box-shadow:
+    0 4px 18px rgb(210 248 152 / 10%),
+    inset 0 1px 0 rgb(252 252 252 / 35%);
+
+  transition:
+    transform 200ms ease,
+    box-shadow 250ms ease,
+    filter 200ms ease;
+}
+
+.auth-submit:hover {
+  filter: brightness(1.05);
+
+  box-shadow:
+    0 0 30px rgb(210 248 152 / 22%),
+    0 8px 24px rgb(210 248 152 / 10%),
+    inset 0 1px 0 rgb(252 252 252 / 35%);
+}
+
+.auth-submit:active {
+  transform: scale(0.98);
+}
+
+.auth-submit:disabled {
+  cursor: not-allowed;
+  filter: grayscale(20%);
+  opacity: 0.6;
+  box-shadow: none;
+}
+
+/* =========================
+   Keyboard accessibility
+========================= */
+
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--color-lime-cream);
+  outline-offset: 3px;
+}
+
+.auth-input:focus-visible {
+  outline: 2px solid var(--color-lime-cream);
+  outline-offset: 2px;
+}
+
+/* =========================
+   Small phones
+========================= */
+
+@media (max-width: 380px) {
+  .auth-card {
+    border-radius: 18px;
+  }
+}
+
+/* =========================
+   Reduced motion accessibility
+========================= */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
