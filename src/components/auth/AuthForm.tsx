@@ -98,6 +98,7 @@ function AuthForm({ mode }: AuthFormProps) {
             />
 
             <PasswordField
+              mode={isRegister}
               autoComplete={isRegister ? "new-password" : "current-password"}
             />
 
