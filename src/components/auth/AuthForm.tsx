@@ -2,6 +2,8 @@ import { Link } from "react-router-dom";
 import FormField from "../ui/FormField";
 import PasswordField from "../ui/PasswordField";
 import Button from "../ui/Button";
+import { loginUser, registerUser } from "../../services/authService";
+import { useState } from "react";
 
 type AuthMode = "login" | "register";
 
@@ -11,6 +13,44 @@ type AuthFormProps = {
 
 function AuthForm({ mode }: AuthFormProps) {
   const isRegister = mode === "register";
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    setError("");
+    setSuccess("");
+    setLoading(true);
+
+    const formData = new FormData(event.currentTarget);
+
+    const name = String(formData.get("name") ?? "");
+    const email = String(formData.get("email") ?? "");
+    const password = String(formData.get("password") ?? "");
+
+    try {
+      if (isRegister) {
+        await registerUser({ name, email, password });
+
+        setSuccess("Account created successfully!");
+      } else {
+        await loginUser({ email, password });
+
+        setSuccess("Login successful!");
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError("Something went wrong. Please try again.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <main className="background-gradient-radial flex items-center justify-center px-3 py-6 sm:px-6 sm:py-10">
@@ -74,9 +114,21 @@ function AuthForm({ mode }: AuthFormProps) {
           className={`auth-form-content auth-form-content--${mode}`}
         >
           <form
-            onSubmit={(event) => event.preventDefault()}
+            onSubmit={handleSubmit}
             className="space-y-5 px-4 pt-7 pb-7 sm:px-6 sm:pb-8"
           >
+            {error && (
+              <p className="text-center text-sm text-red-400" role="alert">
+                {error}
+              </p>
+            )}
+
+            {success && (
+              <p className="text-center text-sm text-lime-300" role="status">
+                {success}
+              </p>
+            )}
+
             {isRegister && (
               <FormField
                 id="name"
