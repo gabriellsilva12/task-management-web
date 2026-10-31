@@ -1,9 +1,10 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import FormField from "../ui/FormField";
 import PasswordField from "../ui/PasswordField";
 import Button from "../ui/Button";
 import { loginUser, registerUser } from "../../services/authService";
 import { useState } from "react";
+import { LoaderCircle } from "lucide-react";
 
 type AuthMode = "login" | "register";
 
@@ -13,6 +14,7 @@ type AuthFormProps = {
 
 function AuthForm({ mode }: AuthFormProps) {
   const isRegister = mode === "register";
+  const navigate = useNavigate();
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -37,9 +39,14 @@ function AuthForm({ mode }: AuthFormProps) {
 
         setSuccess("Account created successfully!");
       } else {
-        await loginUser({ email, password });
+        const res = await loginUser({ email, password });
+
+        localStorage.setItem("user", JSON.stringify(res));
+
+        console.log(res);
 
         setSuccess("Login successful!");
+        navigate("/tasks");
       }
     } catch (error) {
       if (error instanceof Error) {
@@ -154,8 +161,18 @@ function AuthForm({ mode }: AuthFormProps) {
               autoComplete={isRegister ? "new-password" : "current-password"}
             />
 
-            <Button type="submit" className="auth-submit w-full">
-              {isRegister ? "Create account →" : "Sign in →"}
+            <Button
+              type="submit"
+              className="auth-submit w-full flex justify-center"
+              disabled={loading ? true : false}
+            >
+              {loading ? (
+                <LoaderCircle className="animate-spin duration-1000" />
+              ) : isRegister ? (
+                "Create account →"
+              ) : (
+                "Sign in →"
+              )}
             </Button>
 
             <p className="text-center text-xs leading-relaxed text-white/50">

@@ -1,4 +1,3 @@
-
 import { API_URL } from "./api";
 
 type AuthCredentials = {
@@ -19,12 +18,23 @@ export async function loginUser(credentials: AuthCredentials) {
     body: JSON.stringify(credentials),
   });
 
-  const data = await response.json();
+  const text = await response.text();
 
-  if (!response.ok) {
-    throw new Error(data.message || "Unable to sign in.");
+  let data;
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch {
+    data = text;
   }
 
+  if (!response.ok) {
+    const message =
+      typeof data === "string"
+        ? data
+        : data.message || data.error || `Request failed (${response.status})`;
+
+    throw new Error(message);
+  }
   return data;
 }
 
@@ -37,10 +47,22 @@ export async function registerUser(credentials: RegisterCredentials) {
     body: JSON.stringify(credentials),
   });
 
-  const data = await response.json();
+  const text = await response.text();
+
+  let data;
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch {
+    data = text;
+  }
 
   if (!response.ok) {
-    throw new Error(data.message || "Unable to create account.");
+    const message =
+      typeof data === "string"
+        ? data
+        : data.message || data.error || `Request failed (${response.status})`;
+
+    throw new Error(message);
   }
 
   return data;
