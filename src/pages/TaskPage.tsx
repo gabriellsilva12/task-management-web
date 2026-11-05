@@ -1,30 +1,21 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Button from "../components/ui/Button";
-import { createTask, getTasks } from "../services/taskService";
+import { createTask, editTask, getTasks } from "../services/taskService";
 import { Pencil, Trash2 } from "lucide-react";
-
-type UserSession = {
-  token: string;
-  user: {
-    email: string;
-    id: string;
-    name: string;
-  };
-};
-
-type Task = {
-  id: number;
-  title: string;
-  description: string;
-  completed: boolean;
-};
+import type { Task } from "../types/task";
+import type { UserSession } from "../types/UserSession";
 
 export default function TaskPage() {
   const [userData, setuserData] = useState<UserSession | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
 
   const navigate = useNavigate();
+
+  const [editingTaskId, setEditingTaskId] = useState<number | null>(null);
+
+  const [editTitle, setEditTitle] = useState("");
+  const [editDescription, setEditDescription] = useState("");
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -61,6 +52,53 @@ export default function TaskPage() {
   function exitUser() {
     localStorage.removeItem("user");
     navigate("/login", { replace: true });
+  }
+
+  function handleEdit(task: Task) {
+    setEditingTaskId(task.id);
+    setEditTitle(task.title);
+    setEditDescription(task.description);
+  }
+
+  function handleCancelEdit() {
+    setEditingTaskId(null);
+    setEditTitle("");
+    setEditDescription("");
+  }
+
+  function handleSaveEdit(taskId: number) {
+    setTasks((currentTasks) =>
+      currentTasks.map((task) =>
+        task.id === taskId
+          ? {
+              ...task,
+              title: editTitle,
+              description: editDescription,
+            }
+          : task,
+      ),
+    );
+
+    handleCancelEdit();
+  }
+
+  function handleDelete(taskId: number) {
+    setTasks((currentTasks) =>
+      currentTasks.filter((task) => task.id !== taskId),
+    );
+  }
+  async function handleToggleComplete(taskId: number, taskCompleted: boolean) {
+    const newStatus = !taskCompleted;
+
+    const res = await editTask(taskId, {
+      completed: newStatus,
+    });
+
+    setTasks((currentTasks) =>
+      currentTasks.map((task) =>
+        task.id === taskId ? { ...task, completed: newStatus } : task,
+      ),
+    );
   }
 
   return (
@@ -158,13 +196,41 @@ export default function TaskPage() {
                 {tasks.map((task) => (
                   <li
                     key={task.id}
-                    className="rounded-xl border border-white/10 bg-white/[0.03] p-4"
+                    className="rounded-xl border border-white/10 bg-white/[0.03] p-4 transition hover:border-white/20"
                   >
                     <div className="flex flex-wrap items-center justify-between gap-3">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <h3 className="font-semibold text-white">
-                          {task.title}
-                        </h3>
+                      <div className="flex min-w-0 flex-wrap items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={task.completed}
+                          onChange={() =>
+                            handleToggleComplete(task.id, task.completed)
+                          }
+                          disabled={editingTaskId === task.id}
+                          aria-label={`Mark ${task.title} as ${
+                            task.completed ? "pending" : "completed"
+                          }`}
+                          className="size-4 cursor-pointer accent-lime-cream disabled:cursor-not-allowed"
+                        />
+
+                        {editingTaskId === task.id ? (
+                          <input
+                            type="text"
+                            value={editTitle}
+                            onChange={(e) => setEditTitle(e.target.value)}
+                            className="min-w-0 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-lime-cream"
+                          />
+                        ) : (
+                          <h3
+                            className={`font-semibold ${
+                              task.completed
+                                ? "text-white/40 line-through"
+                                : "text-white"
+                            }`}
+                          >
+                            {task.title}
+                          </h3>
+                        )}
 
                         <span
                           className={`text-sm ${
@@ -175,28 +241,63 @@ export default function TaskPage() {
                         </span>
                       </div>
 
-                      <div className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          aria-label="Edit task"
-                          className="rounded-lg p-2 text-white/50 transition hover:bg-white/10 hover:text-lime-cream"
-                        >
-                          <Pencil size={17} />
-                        </button>
+                      <div className="flex items-center gap-1">
+                        {editingTaskId === task.id ? (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => handleSaveEdit(task.id)}
+                              aria-label="Save changes"
+                              className="rounded-lg p-2 text-lime-cream transition hover:bg-lime-cream/10"
+                            >
+                              Save
+                            </button>
 
-                        <button
-                          type="button"
-                          aria-label="Delete task"
-                          className="rounded-lg p-2 text-white/50 transition hover:bg-red-500/10 hover:text-red-400"
-                        >
-                          <Trash2 size={17} />
-                        </button>
+                            <button
+                              type="button"
+                              onClick={handleCancelEdit}
+                              aria-label="Cancel editing"
+                              className="rounded-lg p-2 text-white/50 transition hover:bg-white/10 hover:text-white"
+                            >
+                              Cancel
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => handleEdit(task)}
+                              aria-label="Edit task"
+                              className="rounded-lg p-2 text-white/50 transition hover:bg-white/10 hover:text-lime-cream"
+                            >
+                              <Pencil size={17} />
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => handleDelete(task.id)}
+                              aria-label="Delete task"
+                              className="rounded-lg p-2 text-white/50 transition hover:bg-red-500/10 hover:text-red-400"
+                            >
+                              <Trash2 size={17} />
+                            </button>
+                          </>
+                        )}
                       </div>
                     </div>
 
-                    <p className="mt-2 text-sm text-white/50">
-                      {task.description}
-                    </p>
+                    {editingTaskId === task.id ? (
+                      <input
+                        type="text"
+                        value={editDescription}
+                        onChange={(e) => setEditDescription(e.target.value)}
+                        className="mt-3 w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-lime-cream"
+                      />
+                    ) : (
+                      <p className="mt-2 text-sm text-white/50">
+                        {task.description}
+                      </p>
+                    )}
                   </li>
                 ))}
               </ul>
