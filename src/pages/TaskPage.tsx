@@ -1,10 +1,15 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Button from "../components/ui/Button";
-import { createTask, editTask, getTasks } from "../services/taskService";
+import {
+  createTask,
+  deleteTask,
+  editTask,
+  getTasks,
+} from "../services/taskService";
 import { Pencil, Trash2 } from "lucide-react";
-import type { Task } from "../types/task";
 import type { UserSession } from "../types/UserSession";
+import type { Task } from "../types/Task";
 
 export default function TaskPage() {
   const [userData, setuserData] = useState<UserSession | null>(null);
@@ -30,16 +35,11 @@ export default function TaskPage() {
     const getAllTasks = async () => {
       const res = await getTasks();
       if (res.length > 0) setTasks(res);
-      console.log(res);
     };
 
     getUserData();
     getAllTasks();
   }, []);
-
-  useEffect(() => {
-    console.log(description);
-  }, [description]);
 
   async function handleSubmit() {
     const res = await createTask({ title, description });
@@ -47,11 +47,6 @@ export default function TaskPage() {
 
     setTitle("");
     setDescription("");
-  }
-
-  function exitUser() {
-    localStorage.removeItem("user");
-    navigate("/login", { replace: true });
   }
 
   function handleEdit(task: Task) {
@@ -66,7 +61,9 @@ export default function TaskPage() {
     setEditDescription("");
   }
 
-  function handleSaveEdit(taskId: number) {
+  async function handleSaveEdit(taskId: number) {
+    await editTask(taskId, { title: editTitle, description: editDescription });
+
     setTasks((currentTasks) =>
       currentTasks.map((task) =>
         task.id === taskId
@@ -82,23 +79,27 @@ export default function TaskPage() {
     handleCancelEdit();
   }
 
-  function handleDelete(taskId: number) {
+  async function handleDelete(taskId: number) {
+    await deleteTask(taskId);
+
     setTasks((currentTasks) =>
       currentTasks.filter((task) => task.id !== taskId),
     );
   }
+
   async function handleToggleComplete(taskId: number, taskCompleted: boolean) {
     const newStatus = !taskCompleted;
 
-    const res = await editTask(taskId, {
-      completed: newStatus,
-    });
+    await editTask(taskId, { completed: newStatus });
 
     setTasks((currentTasks) =>
-      currentTasks.map((task) =>
-        task.id === taskId ? { ...task, completed: newStatus } : task,
-      ),
+      currentTasks.map((task) => task.id === taskId ? { ...task, completed: newStatus } : task )
     );
+  }
+
+  function exitUser() {
+    localStorage.removeItem("user");
+    navigate("/login", { replace: true });
   }
 
   return (
@@ -231,16 +232,28 @@ export default function TaskPage() {
                             {task.title}
                           </h3>
                         )}
-
-                        <span
-                          className={`text-sm ${
-                            task.completed ? "text-lime-cream" : "text-red-400"
-                          }`}
-                        >
-                          {task.completed ? "Completed" : "Pending"}
-                        </span>
                       </div>
 
+                      {editingTaskId === task.id ? (
+                        <input
+                          type="text"
+                          value={editDescription}
+                          onChange={(e) => setEditDescription(e.target.value)}
+                          className="mt-3 w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-lime-cream"
+                        />
+                      ) : (
+                        <p className="mt-2 text-sm text-white/50">
+                          {task.description}
+                        </p>
+                      )}
+
+                      <span
+                        className={`text-sm ${
+                          task.completed ? "text-lime-cream" : "text-red-400"
+                        }`}
+                      >
+                        {task.completed ? "Completed" : "Pending"}
+                      </span>
                       <div className="flex items-center gap-1">
                         {editingTaskId === task.id ? (
                           <>
@@ -285,19 +298,6 @@ export default function TaskPage() {
                         )}
                       </div>
                     </div>
-
-                    {editingTaskId === task.id ? (
-                      <input
-                        type="text"
-                        value={editDescription}
-                        onChange={(e) => setEditDescription(e.target.value)}
-                        className="mt-3 w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-lime-cream"
-                      />
-                    ) : (
-                      <p className="mt-2 text-sm text-white/50">
-                        {task.description}
-                      </p>
-                    )}
                   </li>
                 ))}
               </ul>
